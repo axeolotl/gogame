@@ -15,7 +15,7 @@ class Chain {
   public Chain(Cell c) {
     owner = c.owner;
     go = c.go;
-    cells = new ArrayList<Cell>(1);
+    cells = new ArrayList<>(1);
     cells.add(c);
   }
 

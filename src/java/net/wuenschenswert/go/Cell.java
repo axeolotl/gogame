@@ -1,7 +1,10 @@
 package net.wuenschenswert.go;
 
 import java.awt.*;
-import java.util.Enumeration;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Created by axel on 15.01.17.
@@ -113,6 +116,9 @@ class Cell {
   boolean putPiece(Player player)
   {
     if (owner == null) {
+      if (wouldBeSuicide(player))
+        return false;
+
       setOwner(player);
       chain = new Chain(this);
       // merge with adjacent chains of same player
@@ -136,5 +142,23 @@ class Cell {
       return true;
     }
     return false;
+  }
+
+  private boolean wouldBeSuicide(final Player player) {
+    // new chain would be union of this player's adjacent chains plus this cell
+    final Set<Chain> neighbourChains = new HashSet<>();
+    neighboursDo(new CellFun() {
+      @Override
+      public void with(Cell c) {
+        if(c.owner == player) {
+          neighbourChains.add(c.chain);
+        }
+      }
+    });
+    final Chain newChain = new Chain(this);
+    for(Chain ch: neighbourChains) {
+      newChain.cells.addAll(ch.cells);
+    }
+    return newChain.getLiberties().isEmpty();
   }
 }
