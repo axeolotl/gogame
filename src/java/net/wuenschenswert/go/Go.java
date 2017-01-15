@@ -14,7 +14,7 @@ import java.applet.*;
 
 public class Go extends Applet {
   /** board size */
-  static int boardsize = 18;
+  int boardsize = 18;
 
   /**
    * invariant: board[row][col].row == row,

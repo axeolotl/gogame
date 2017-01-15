@@ -1,8 +1,8 @@
 package net.wuenschenswert.go;
 
-import java.awt.*;
-import java.util.Enumeration;
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 
 /**
  * A chain of adjacent cells
@@ -10,13 +10,13 @@ import java.util.Vector;
 class Chain {
   Go go;
   public Player owner;
-  public Vector cells;
+  public List<Cell> cells;
 
   public Chain(Cell c) {
     owner = c.owner;
     go = c.go;
-    cells = new Vector(1);
-    cells.addElement(c);
+    cells = new ArrayList<Cell>(1);
+    cells.add(c);
   }
 
   /**
@@ -26,13 +26,11 @@ class Chain {
    */
   void merge(Chain b) {
     if (b != this) {
-      // assert b.owner == owner;
-      Enumeration e = b.cells.elements();
-      while (e.hasMoreElements()) {
-        Cell c = (Cell) e.nextElement();
-        // assert !cells.contains(c);
+      assert b.owner == owner;
+      for (Cell c: b.cells) {
+        assert !cells.contains(c);
         c.chain = this;
-        cells.addElement(c);
+        cells.add(c);
       }
       b.cells = null;  // avoid accidents
       b.owner = null;  // avoid accidents
@@ -40,32 +38,22 @@ class Chain {
   }
 
   void blink() {
-    Enumeration e = cells.elements();
-    while (e.hasMoreElements()) {
-      Cell c = (Cell) e.nextElement();
+    for (Cell c: cells) {
       c.blink();
     }
   }
 
-  Vector liberties() {
-    Vector libs = new Vector();
-    LibertyFun f = new LibertyFun(libs);
+  Set<Cell> getLiberties() {
+    LibertyFun f = new LibertyFun();
 
-    Enumeration e = cells.elements();
-    while (e.hasMoreElements()) {
-      Cell c = (Cell) e.nextElement();
+    for (Cell c: cells) {
       c.neighboursDo(f);
     }
-    return libs;
+    return f.getLiberties();
   }
 
   void blinkLiberties() {
-    Graphics g = go.getGraphics();
-
-    Vector libs = liberties();
-    Enumeration l = libs.elements();
-    while (l.hasMoreElements()) {
-      Cell c = (Cell) l.nextElement();
+    for (Cell c: getLiberties()) {
       c.blink();
     }
   }

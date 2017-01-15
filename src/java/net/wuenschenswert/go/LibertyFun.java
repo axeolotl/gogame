@@ -1,19 +1,16 @@
 package net.wuenschenswert.go;
 
-import java.util.Vector;
+import java.util.HashSet;
+import java.util.Set;
 
-/**
- * Created by axel on 15.01.17.
- */
 class LibertyFun implements CellFun {
-  Vector liberties;
-  protected LibertyFun(Vector libs)
-  {
-    liberties = libs;
-  }
+  private Set<Cell> liberties = new HashSet<>();
   public void with(Cell c) {
     if (c.owner == null && !liberties.contains(c)) {
-      liberties.addElement(c);
+      liberties.add(c);
     }
+  }
+  Set<Cell> getLiberties() {
+    return liberties;
   }
 }

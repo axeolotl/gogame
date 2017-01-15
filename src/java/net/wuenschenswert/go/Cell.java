@@ -7,8 +7,8 @@ import java.util.Enumeration;
  * Created by axel on 15.01.17.
  */
 class Cell {
-  public Go go;
-  public int row,col;
+  public final Go go;
+  public final int row,col;
   /**
    * the Player whose stone occupies this field, or null
    */
@@ -122,16 +122,14 @@ class Cell {
       // to do: suicide rule, ko rule
 
       System.out.print("Chain: ");
-      Enumeration e = chain.cells.elements();
-      while (e.hasMoreElements()) {
-        System.out.print(e.nextElement()+" ");
+      for(Cell c: chain.cells) {
+        System.out.print(c+" ");
       }
       System.out.println();
 
       System.out.print("Liberties: ");
-      Enumeration l = chain.liberties().elements();
-      while (l.hasMoreElements()) {
-        System.out.print(l.nextElement()+" ");
+      for (Cell l: chain.getLiberties()) {
+        System.out.print(l+" ");
       }
       System.out.println();
 
