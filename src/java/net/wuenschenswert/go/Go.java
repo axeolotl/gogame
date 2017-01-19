@@ -100,10 +100,10 @@ public class Go extends Applet {
     if (cell != null && !cell.isEmpty()) {
       if (evt.shiftDown()) {
         // show chain
-        cell.chain.blink();
+        cell.getChain().blink();
       } else if (evt.metaDown()) {
         // show chain's liberties
-        cell.chain.blinkLiberties();
+        cell.getChain().blinkLiberties();
       }
     }
     return true;

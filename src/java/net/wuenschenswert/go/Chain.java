@@ -8,33 +8,13 @@ import java.util.Set;
  * A chain of adjacent cells
  */
 class Chain {
-  Go go;
   public Player owner;
   public List<Cell> cells;
 
-  public Chain(Cell c) {
-    owner = c.owner;
-    go = c.go;
+  public Chain(Cell c, Player owner) {
+    this.owner = owner;
     cells = new ArrayList<>(1);
     cells.add(c);
-  }
-
-  /**
-   * add all cells in <b> to this
-   * requires that this and b are disjoint and belong to the same Player
-   * and are adjacent
-   */
-  void merge(Chain b) {
-    if (b != this) {
-      assert b.owner == owner;
-      for (Cell c: b.cells) {
-        assert !cells.contains(c);
-        c.chain = this;
-        cells.add(c);
-      }
-      b.cells = null;  // avoid accidents
-      b.owner = null;  // avoid accidents
-    }
   }
 
   void blink() {
@@ -56,5 +36,30 @@ class Chain {
     for (Cell c: getLiberties()) {
       c.blink();
     }
+  }
+
+  /**
+   * register this chain as each member cell's chain
+   */
+  public void register() {
+    for(Cell c: cells) {
+      assert(c.getOwner() == owner);
+      c.setChain(this);
+    }
+  }
+
+  /**
+   * unregister this chain as each member cell's chain (when being captured)
+   */
+  public void unregister() {
+    for(Cell c: cells) {
+      assert(c.getChain() == this);
+      c.setChain(null);
+    }
+
+  }
+
+  public void addCells(List<Cell> cells) {
+    this.cells.addAll(cells);
   }
 }

@@ -1,9 +1,7 @@
 package net.wuenschenswert.go;
 
 import java.awt.*;
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -12,27 +10,20 @@ import java.util.Set;
 class Cell {
   public final Go go;
   public final int row,col;
-  /**
-   * the Player whose stone occupies this field, or null
-   */
-  public Player owner;
+  private Player owner;
 
-  /**
-   * if owner non-null:
-   * the chain this Cell belongs to.
-   */
-  public Chain chain;
+  private Chain chain;
 
   boolean blinking;
 
   public boolean isEmpty()
   {
-    return owner == null;
+    return getOwner() == null;
   }
 
   public String toString()
   {
-    return "Cell{"+row+","+col+","+ (owner==null ? "/" : owner.name)+"}";
+    return "Cell{"+row+","+col+","+ (getOwner() ==null ? "/" : getOwner().name)+"}";
   }
 
   public Cell(Go g, int r, int c)
@@ -40,8 +31,8 @@ class Cell {
     go = g;
     row = r;
     col = c;
-    owner = null;
-    chain = null;
+    setOwner(null);
+    setChain(null);
     blinking = false;
   }
 
@@ -74,8 +65,8 @@ class Cell {
 
   void paint(Graphics g)
   {
-    if (owner != null || blinking) {
-      g.setColor(blinking ? Color.green : owner.color);
+    if (getOwner() != null || blinking) {
+      g.setColor(blinking ? Color.green : getOwner().color);
       int x = go.gridX(col);
       int y = go.gridY(row);
       int w = go.cellSize.width * 8 / 10;
@@ -108,24 +99,29 @@ class Cell {
   {
     if (owner != p) {
       owner = p;
-      chain = null;
       go.repaint(bounds());
     }
   }
 
   boolean putPiece(Player player)
   {
-    if (owner == null) {
-      if (wouldBeSuicide(player))
+    if (getOwner() == null) {
+      Chain newChain = getNewChain(player);
+
+      if (newChain.getLiberties().isEmpty()) {
+        // putting a piece here would violate the suicide rule.
+        // TODO: ...but only if it does not make room by capturing an enemy chain!
         return false;
+      }
 
       setOwner(player);
-      chain = new Chain(this);
-      // merge with adjacent chains of same player
-      neighboursDo(new MergeFun(chain));
+      for (Chain chain: getNeighbourChains(player)) {
+        chain.unregister();
+      }
+      newChain.register();
       // check for killed chains
       neighboursDo(new KillerFun(player));
-      // to do: suicide rule, ko rule
+      // to do: ko rule
 
       System.out.print("Chain: ");
       for(Cell c: chain.cells) {
@@ -144,21 +140,46 @@ class Cell {
     return false;
   }
 
-  private boolean wouldBeSuicide(final Player player) {
+  /**
+   * returns the chain that would be created if the given player put a piece here.
+   * @param player
+   * @return chain
+   */
+  private Chain getNewChain(final Player player) {
     // new chain would be union of this player's adjacent chains plus this cell
+    final Chain newChain = new Chain(this, player);
+    for(Chain ch: getNeighbourChains(player)) {
+      newChain.addCells(ch.cells);
+    }
+    return newChain;
+  }
+
+  private Set<Chain> getNeighbourChains(final Player player) {
     final Set<Chain> neighbourChains = new HashSet<>();
     neighboursDo(new CellFun() {
       @Override
       public void with(Cell c) {
-        if(c.owner == player) {
+        if(c.getOwner() == player) {
           neighbourChains.add(c.chain);
         }
       }
     });
-    final Chain newChain = new Chain(this);
-    for(Chain ch: neighbourChains) {
-      newChain.cells.addAll(ch.cells);
-    }
-    return newChain.getLiberties().isEmpty();
+    return neighbourChains;
+  }
+
+  public Chain getChain() {
+    return chain;
+  }
+
+  public void setChain(Chain chain) {
+    assert this.chain == null || chain == null;
+    this.chain = chain;
+  }
+
+  /**
+   * the Player whose stone occupies this field, or null
+   */
+  public Player getOwner() {
+    return owner;
   }
 }

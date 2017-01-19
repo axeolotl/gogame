@@ -11,14 +11,15 @@ class KillerFun implements CellFun {
         goodGuy = p;
     }
     public void with(Cell c) {
-        if (!c.isEmpty() && c.owner != goodGuy) {
-            Chain ch = c.chain;
+        if (!c.isEmpty() && c.getOwner() != goodGuy) {
+            Chain ch = c.getChain();
             Set<Cell> libs = ch.getLiberties();
             if (libs.isEmpty()) {
-                // KILL! BLOOD! GORE!
+                // this chain was captured.
+                ch.unregister();
                 for(Cell c1: ch.cells) {
-                    assert c1.owner != goodGuy;
-                    assert c1.owner != null;
+                    assert c1.getOwner() != goodGuy;
+                    assert c1.getOwner() != null;
                     c1.setOwner(null);
                     goodGuy.captured++;
                 }
