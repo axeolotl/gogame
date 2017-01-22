@@ -14,7 +14,7 @@ import java.applet.*;
 
 public class Go extends Applet {
   /** board size */
-  int boardsize = 18;
+  int boardsize = 9;
 
   /**
    * invariant: board[row][col].row == row,
@@ -132,6 +132,9 @@ public class Go extends Applet {
 
   Player currentPlayer() {
     return turn == 1 ? player1 : player2;
+  }
+  Player getOpponent(Player player) {
+    return player == player1 ? player2 : player1;
   }
 
   void changeTurn() {

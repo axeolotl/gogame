@@ -1,6 +1,7 @@
 package net.wuenschenswert.go;
 
 import java.awt.*;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -110,8 +111,17 @@ class Cell {
 
       if (newChain.getLiberties().isEmpty()) {
         // putting a piece here would violate the suicide rule.
-        // TODO: ...but only if it does not make room by capturing an enemy chain!
-        return false;
+        // ...but only if it does not make room by capturing an enemy chain!
+        boolean makesRoom = false;
+        for(Chain ch: getNeighbourChains(go.getOpponent(player))) {
+          if(ch.getLiberties().equals(Collections.singleton(this))) {
+            makesRoom = true;
+            break;
+          }
+        }
+        if (!makesRoom) {
+          return false;
+        }
       }
 
       setOwner(player);
