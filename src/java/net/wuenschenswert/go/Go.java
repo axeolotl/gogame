@@ -21,7 +21,7 @@ public class Go extends Applet {
 
   Player player1, player2;
 
-  int turn;  /* whose turn: 1 or 2 */
+  Player currentPlayer;
   private History history;
 
   public void init() {
@@ -31,9 +31,9 @@ public class Go extends Applet {
         board[r][c] = new Cell(this,r,c);
       }
     }
-    turn = 1;
     player1 = new Player("Black", Color.black);
     player2 = new Player("Red", Color.red);
+    currentPlayer = player1;
     history = new History(this);
     history.recordState();
     enableEvents(AWTEvent.KEY_EVENT_MASK | AWTEvent.MOUSE_EVENT_MASK);
@@ -130,7 +130,7 @@ public class Go extends Applet {
       unblink();
     } else if (cell != null) {
       // drop Piece
-      if (cell.putPiece(currentPlayer())) {
+      if (cell.putPiece(getCurrentPlayer())) {
         history.recordState();
         changeTurn();
       }
@@ -190,17 +190,16 @@ public class Go extends Applet {
     }
   }
 
-  Player currentPlayer() {
-    return turn == 1 ? player1 : player2;
+  Player getCurrentPlayer() {
+    return currentPlayer;
   }
   Player getOpponent(Player player) {
     return player == player1 ? player2 : player1;
   }
 
   void changeTurn() {
-    turn = 3-turn;
-    Player current = currentPlayer();
-    showStatus(current.name + "'s turn");
+    currentPlayer = getOpponent(currentPlayer);
+    showStatus(currentPlayer.name + "'s turn");
   }
 }
 
