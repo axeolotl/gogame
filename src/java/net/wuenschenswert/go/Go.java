@@ -40,7 +40,7 @@ public class Go extends Applet {
     turn = 1;
     player1 = new Player("Black", Color.black);
     player2 = new Player("Red", Color.red);
-    history.add(BoardState.createFrom(this));
+    recordHistory();
     enableEvents(AWTEvent.KEY_EVENT_MASK | AWTEvent.MOUSE_EVENT_MASK);
   }
 
@@ -136,7 +136,7 @@ public class Go extends Applet {
     } else if (cell != null) {
       // drop Piece
       if (cell.putPiece(currentPlayer())) {
-        history.add(BoardState.createFrom(this));
+        recordHistory();
         changeTurn();
       }
     }
@@ -146,19 +146,31 @@ public class Go extends Applet {
 
   @Override
   protected void processKeyEvent(KeyEvent e) {
-    if(history.size() > 1
+    if(canUndo()
         && e.getID() == KeyEvent.KEY_PRESSED
         && e.getKeyChar() == 'z'
         && (e.getModifiersEx() & (KeyEvent.META_DOWN_MASK  | KeyEvent.SHIFT_DOWN_MASK)) == KeyEvent.META_DOWN_MASK) {
       // z pressed with META, but not SHIFT.
       System.out.println("UNDO! "+e);
-      history.remove(history.size()-1);
-      restoreState(history.get(history.size()-1));
+      undo();
       changeTurn();
     } else {
       System.out.println("key "+e);
     }
     super.processKeyEvent(e);
+  }
+
+  private boolean canUndo() {
+    return history.size() > 1;
+  }
+
+  private void undo() {
+    history.remove(history.size()-1);
+    restoreState(history.get(history.size()-1));
+  }
+
+  private void recordHistory() {
+    history.add(BoardState.createFrom(this));
   }
 
   private void restoreState(BoardState boardState) {
