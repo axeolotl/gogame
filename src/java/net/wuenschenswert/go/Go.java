@@ -29,6 +29,7 @@ public class Go extends Applet {
   int turn;  /* whose turn: 1 or 2 */
 
   List<BoardState> history = new ArrayList<>();
+  int redoPosition = 0;
 
   public void init() {
     board = new Cell[boardsize][boardsize];
@@ -154,6 +155,14 @@ public class Go extends Applet {
       System.out.println("UNDO! "+e);
       undo();
       changeTurn();
+    } else if(canRedo()
+        && e.getID() == KeyEvent.KEY_PRESSED
+        && e.getKeyChar() == 'z'
+        && (e.getModifiersEx() & (KeyEvent.META_DOWN_MASK  | KeyEvent.SHIFT_DOWN_MASK)) == (KeyEvent.META_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK)) {
+      // z pressed with META and SHIFT.
+      System.out.println("REDO! "+e);
+      redo();
+      changeTurn();
     } else {
       System.out.println("key "+e);
     }
@@ -161,16 +170,29 @@ public class Go extends Applet {
   }
 
   private boolean canUndo() {
-    return history.size() > 1;
+    return redoPosition > 1;
   }
 
   private void undo() {
-    history.remove(history.size()-1);
-    restoreState(history.get(history.size()-1));
+    redoPosition -= 1;
+    restoreState(history.get(redoPosition - 1));
+  }
+
+  private boolean canRedo() {
+    return redoPosition < history.size();
+  }
+
+  private void redo() {
+    restoreState(history.get(redoPosition));
+    redoPosition += 1;
   }
 
   private void recordHistory() {
+    while(history.size() > redoPosition) {
+      history.remove(history.size()-1);
+    }
     history.add(BoardState.createFrom(this));
+    ++redoPosition;
   }
 
   private void restoreState(BoardState boardState) {
